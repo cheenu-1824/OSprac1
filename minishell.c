@@ -142,6 +142,18 @@ int main(int argk, char *argv[], char *envp[])
         } else {
           BGProcesses[numBG].pid = frkRtnVal;
           printf("[%d] %d\n", numBG + 1, frkRtnVal);        
+
+          int length = (int)strlen(lineCpy);
+
+          for (int i = length-1; i > -1; i--){
+            if (lineCpy[i] == '\n'){
+              lineCpy[i] = '\0';
+            }
+            if (lineCpy[i] == '&'){
+              lineCpy[i] = '\0';
+            }
+          }
+
           strncpy(BGProcesses[numBG].command, lineCpy, NL);
           numBG++;
         }
