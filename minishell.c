@@ -152,6 +152,8 @@ int main(int argk, char *argv[], char *envp[])
         } else {
           // Stores the information of the background process
           BGProcesses[numBG].pid = frkRtnVal;
+          // Prints message when BG starts
+          printf("[%d] %d\n", numBG + 1, frkRtnVal);
           int length = (int)strlen(lineCpy);
 
           // Cleans the input command to expected output format
