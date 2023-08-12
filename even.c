@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
     
     for (int i = 0; i < n; i++){
         printf("%d\n", even);
+        fflush(stdout);
         even +=2;
         sleep(5);
     }
