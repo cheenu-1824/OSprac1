@@ -24,19 +24,23 @@
 char            line[NL];	/* command input buffer */
 char lineCpy[NL];
 
-
+// struct holding process ID and associated command of a background process
 typedef struct {
     pid_t pid;
     char command[NL];
 } BGProcess;
 
-BGProcess BGProcesses[BG];
+// Intialising storage of background process
+BGProcess BGProcesses[BG]; 
 int numBG = 0;
 
+// Handles when a signal of a child process being terminated
 void sigChildHandler(int signum) {
   int status;
   pid_t pid;
+  // Checks for a child being terminated without stop execution of other code
   while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+    //print any BG process that have been finished
     for (int i = 0; i < numBG; i++) {
       if (BGProcesses[i].pid == pid) {
         printf("[%d]+ Done %s\n", i + 1, BGProcesses[i].command);
@@ -91,6 +95,7 @@ int main(int argk, char *argv[], char *envp[])
     if (line[0] == '#' || line[0] == '\n' || line[0] == '\000')
       continue;			/* to prompt */
 
+    // Tokenizing input and store keywords in an array 
     v[0] = strtok(line, sep);
     int size = 0;
     for (i = 1; i < NV; i++) {
@@ -101,6 +106,7 @@ int main(int argk, char *argv[], char *envp[])
       }
     }
 
+    // Check if input ends with '&' and classify if a BG process
     if (strcmp("&", v[size - 1]) != 0) {
       background = 0;
     } else {
@@ -108,6 +114,7 @@ int main(int argk, char *argv[], char *envp[])
       background = 1;
     }
 
+    // Check if a change directory command is received and changes to directory if it exists
     if (strcmp("cd", v[0]) == 0) {
       if (chdir(v[1]) < 0) {
         perror("Error");
@@ -127,6 +134,7 @@ int main(int argk, char *argv[], char *envp[])
       }
     case 0:			/* code executed only by child process */
       {
+        // Returns error if execution fails
         if (execvp(v[0], v) < 0) {
           perror("Error");
           exit(1);
@@ -134,17 +142,19 @@ int main(int argk, char *argv[], char *envp[])
       }
     default:			/* code executed only by parent process */
       {
+        // Checks if the command is not a BG process
         if (!background) {
+          // Parent waits for child to terminate
           wpid = wait(0);
           if (wpid < 0 && errno != ECHILD) {
             perror("Error");
           }
         } else {
+          // Stores the information of the background process
           BGProcesses[numBG].pid = frkRtnVal;
-          printf("[%d] %d\n", numBG + 1, frkRtnVal);        
-
           int length = (int)strlen(lineCpy);
 
+          // Cleans the input command to expected output format
           for (int i = length-1; i > -1; i--){
             if (lineCpy[i] == '\n'){
               lineCpy[i] = '\0';
@@ -153,7 +163,7 @@ int main(int argk, char *argv[], char *envp[])
               lineCpy[i] = '\0';
             }
           }
-
+          
           strncpy(BGProcesses[numBG].command, lineCpy, NL);
           numBG++;
         }
